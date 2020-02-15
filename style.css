@@ -1,0 +1,72 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    margin: 0;
+}
+
+.wrapper {
+    display: grid;
+    justify-content: center;
+}
+
+.answer {
+    grid-area: answer;
+    justify-self: end;
+    align-self: center;
+    /* padding-right: 5px; */
+}
+
+.logo {
+    grid-area: logo;
+    align-self: center;
+    justify-self: center;
+}
+
+.operators {
+    grid-area: operators;
+    grid-gap: 5px 5px;
+    align-self: stretch;
+    justify-self: end;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.operator {
+    flex: 1;
+}
+
+.numbers {
+    grid-area: numbers;
+    grid-gap: 5px 5px;
+    align-self: stretch;
+    justify-self: center;
+
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.number {
+    flex: 1;
+}
+
+.clr {
+    grid-area: clr;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 50px 50px 50px 50px;
+    grid-template-rows: 50px 50px 50px 50px 50px 50px;
+    grid-template-areas: 
+        "answer answer answer answer"
+        "logo logo clr operators"
+        "numbers numbers numbers operators"
+        "numbers numbers numbers operators"
+        "numbers numbers numbers operators"
+        "numbers numbers numbers operators";
+    padding: 10px;
+    border: 2px solid #DDDDDD;
+}
