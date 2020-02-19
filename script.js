@@ -6,7 +6,7 @@ keys.forEach(key => key.addEventListener('click', getInput));
 
 const maxWidth = 20;
 let width = 0;
-let displayValue = "";
+let displayValue = "0";
 let rVal = "";
 let lVal = "";
 let operator = "";
@@ -17,6 +17,7 @@ function getInput() {
     let key = this.dataset.key;
 
     if(key === 'C') {
+        this.blur();
         clearDisplay();
         return;
     }
@@ -24,18 +25,22 @@ function getInput() {
     if(impossible) return;
 
     if(key === '=') {
+        this.blur();
+        
         displayValue = calcAnswer();
+        
         isOperatedOn = false;
         operator = "";
+        
         
     } else if(width === maxWidth) {
         return;
     } 
     else if(this.classList.contains('number')) {
+        this.blur();
         // Work out if it's adding to the left side or right side
         if(operatorSelected()) {
             displayValue = "";
-            console.log("OPERATOR SELECTED");
         }
 
         if(isOperatedOn) {
@@ -44,18 +49,26 @@ function getInput() {
         } else {
             lVal += key;
         }
-        displayValue += key;
-
+        
         if(key === '.') {
             point.disabled = true;
+            if(isOperatedOn && !displayValue) {
+                displayValue = '0';
+            }
         }
+
+        if(displayValue === '0' && !point.disabled) {
+            displayValue = key;
+        } else {
+            displayValue += key;
+        }
+
 
         toggleSelected(key);
         
     }
     else if(this.classList.contains('operator')) {
         // Work out whether we need to do a calculation or not
-        
         if(rVal)
             displayValue = calcAnswer();
         operator = key;
@@ -69,11 +82,11 @@ function getInput() {
 }
 
 function clearDisplay() {
-    displayValue = "";
+    displayValue = "0";
     rVal = "";
     lVal = "";
     operator = "";
-    display.textContent = "";
+    display.textContent = displayValue;
     isOperatedOn = false;
     width = 0;
     impossible = false;
@@ -81,7 +94,18 @@ function clearDisplay() {
 }
 
 function calcAnswer() {
-    let answer = operate(operator, parseFloat(lVal), parseFloat(rVal));
+    let answer;
+
+    if(!lVal) {
+        return "0";
+    }
+    else if(!rVal) {
+        // just return what we had before
+        toggleSelected(-1);
+        return displayValue;
+    } else {
+        answer = operate(operator, parseFloat(lVal), parseFloat(rVal));
+    }
 
     if(impossible) return answer;
     
@@ -134,7 +158,7 @@ function operate(op, a, b) {
         {
             if(b === 0) {
                 impossible = true;
-                return 'Dividing by zero is impossible';
+                return '!Divide by zero';
             }
             else
                 return divide(a, b);
