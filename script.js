@@ -10,112 +10,98 @@ let displayValue = "0";
 let rVal = "";
 let lVal = "";
 let operator = "";
-let isOperatedOn = false;
 let impossible = false;
+let lastKey;
 
 function getInput() {
+    
+    // Don't overflow the screen
+    if(width === maxWidth) return;
+
     let key = this.dataset.key;
 
-    if(key === 'C') {
+    if(this.classList.contains('number')) {
         this.blur();
+        displayValue = handleNumberInput(key);
+    } else if(key === 'C') {
+        this.blur();
+        displayValue = '0';
         clearDisplay();
-        return;
+    } else {
+        displayValue = handleOperatorInput(key);
     }
 
-    if(impossible) return;
+    lastKey = key;
+    toggleSelected(key);
 
-    if(key === '=') {
-        this.blur();
-        
-        displayValue = calcAnswer();
-        
-        isOperatedOn = false;
-        operator = "";
-        
-        
-    } else if(width === maxWidth) {
-        return;
-    } 
-    else if(this.classList.contains('number')) {
-        this.blur();
-        // Work out if it's adding to the left side or right side
-        if(operatorSelected()) {
-            displayValue = "";
-        }
-
-        if(isOperatedOn) {
-            // right side
-            rVal += key;
-        } else {
-            lVal += key;
-        }
-        
-        if(key === '.') {
-            point.disabled = true;
-            if(isOperatedOn && !displayValue) {
-                displayValue = '0';
-            }
-        }
-
-        if(displayValue === '0' && !point.disabled) {
-            displayValue = key;
-        } else {
-            displayValue += key;
-        }
-
-
-        toggleSelected(key);
-        
-    }
-    else if(this.classList.contains('operator')) {
-        // Work out whether we need to do a calculation or not
-        if(rVal)
-            displayValue = calcAnswer();
-        operator = key;
-        isOperatedOn = true;
-        point.disabled = false;
-        toggleSelected(key);
+    if(impossible) {
+        clearDisplay();
     }
 
     display.textContent = displayValue;
     width = display.innerHTML.length;
 }
 
-function clearDisplay() {
-    displayValue = "0";
-    rVal = "";
-    lVal = "";
-    operator = "";
-    display.textContent = displayValue;
-    isOperatedOn = false;
-    width = 0;
-    impossible = false;
+function handleNumberInput(key) {
+    if(key === '0' && !lastKey) return displayValue;
+
+    if(key === '.') {
+        point.disabled = true;
+
+        if(!lastKey) lVal = '0';
+    }
+
+    if(isOperator(lastKey) || rVal) {
+        rVal += key;
+        return rVal;
+    } else {
+        lVal += key;
+        return lVal;
+    }
+}
+
+function handleOperatorInput(key) {
     point.disabled = false;
+    let answer = displayValue;
+
+    if(rVal && !impossible) {
+        lVal = calcAnswer();
+        rVal = "";
+        answer = lVal;
+    } 
+
+    operator = key;
+    return answer;
+    
 }
 
 function calcAnswer() {
-    let answer;
-
-    if(!lVal) {
-        return "0";
-    }
-    else if(!rVal) {
-        // just return what we had before
-        toggleSelected(-1);
-        return displayValue;
-    } else {
-        answer = operate(operator, parseFloat(lVal), parseFloat(rVal));
-    }
-
-    if(impossible) return answer;
-    
-    lVal = answer;
-    rVal = "";
+    console.log(operator, lVal, rVal);
+    let answer = operate(operator, parseFloat(lVal), parseFloat(rVal));
 
     // Don't let the answer length overflow
+    if(impossible) return answer;
+
     let answerLength = answer;
     answerLength = Math.floor(answerLength).toString().length + 1;
     return parseFloat(answer.toFixed(maxWidth - answerLength));
+}
+
+function isOperator(key) {
+    if(key === '+' || key === '-' || key === '/' || key === '*') return true;
+
+    return false;
+}
+
+function clearDisplay() {
+    rVal = "";
+    lVal = "";
+    operator = "";
+    width = 0;
+    impossible = false;
+    point.disabled = false;
+    lastKey = "";
+    toggleSelected();
 }
 
 function toggleSelected(key) {
@@ -148,7 +134,7 @@ const divide = (a, b) => (a / b);
 
 function operate(op, a, b) {
     switch(op) {
-        case '+':
+        case '+': 
             return add(a, b);
         case '-':
             return subtract(a, b);
