@@ -2,7 +2,10 @@ const keys = document.querySelectorAll('[data-key]');
 const operators = document.querySelectorAll('.operator');
 const point = document.querySelector('[data-key="."]');
 const display = document.querySelector('.answer');
+const body = document.querySelector('body');
+
 keys.forEach(key => key.addEventListener('click', getInput));
+body.addEventListener('keydown', getInput);
 
 const maxWidth = 20;
 let width = 0;
@@ -13,26 +16,42 @@ let operator = "";
 let impossible = false;
 let lastKey;
 
-function getInput() {
+function getInput(e) {
     
     // Don't overflow the screen
     if(width === maxWidth) return;
 
-    let key = this.dataset.key;
+    let key;
+    let button;
+    if(e.key && isKeyBoardEvent(e.key)) {
+        key = e.key;
+        button = getButton(key);
+        let lastButton = getButton(lastKey)
+        if(lastButton)
+            lastButton.blur();
+        button.focus();
+    }
+    else {
+        key = this.dataset.key;
+        button = this;
+        button.blur();
+        
+    }
 
-    if(this.classList.contains('number')) {
-        this.blur();
+    if(button.classList.contains('number')) {
         displayValue = handleNumberInput(key);
     } else if(key === 'C') {
-        this.blur();
         displayValue = '0';
         clearDisplay();
+    } else if(key === 'Backspace') {
+        displayValue = handleBackspace();
     } else {
+        if(key !== '=')
+            button.focus();
         displayValue = handleOperatorInput(key);
     }
 
     lastKey = key;
-    toggleSelected(key);
 
     if(impossible) {
         clearDisplay();
@@ -40,6 +59,37 @@ function getInput() {
 
     display.textContent = displayValue;
     width = display.innerHTML.length;
+}
+
+function getButton(keyFromKeyboard) {
+    let found;
+    keys.forEach(key => {
+        if(key.dataset.key === keyFromKeyboard) {
+            found = key;
+        }
+        if(key.dataset.key === '=' && keyFromKeyboard === 'Enter')
+            found = key;
+    });
+
+    return found;
+}
+
+function handleBackspace() {
+    if(displayValue.length <= 1)
+    {
+        clearDisplay();
+        return '0';
+
+    }
+    // Take off the last digit
+    if(rVal) {
+        rVal = rVal.slice(0, -1);
+        return rVal;
+    }
+    else if(lVal) {
+        lVal = lVal.slice(0, -1)
+        return lVal;
+    }
 }
 
 function handleNumberInput(key) {
@@ -64,19 +114,18 @@ function handleOperatorInput(key) {
     point.disabled = false;
     let answer = displayValue;
 
-    if(rVal && !impossible) {
+    if(lVal && rVal && !impossible) {
         lVal = calcAnswer();
         rVal = "";
         answer = lVal;
     } 
 
     operator = key;
-    return answer;
+    return answer.toString();
     
 }
 
 function calcAnswer() {
-    console.log(operator, lVal, rVal);
     let answer = operate(operator, parseFloat(lVal), parseFloat(rVal));
 
     // Don't let the answer length overflow
@@ -84,7 +133,7 @@ function calcAnswer() {
 
     let answerLength = answer;
     answerLength = Math.floor(answerLength).toString().length + 1;
-    return parseFloat(answer.toFixed(maxWidth - answerLength));
+    return parseFloat(answer.toFixed(maxWidth - answerLength)).toString();
 }
 
 function isOperator(key) {
@@ -101,27 +150,16 @@ function clearDisplay() {
     impossible = false;
     point.disabled = false;
     lastKey = "";
-    toggleSelected();
 }
 
-function toggleSelected(key) {
-    operators.forEach(operator => {
-        if(operator.dataset.key === key) {
-            operator.classList.add('selected');
-        } else {
-            operator.classList.remove('selected');
-        }
-    });
-}
-
-function operatorSelected() {
-    let found = false;
-    operators.forEach(operator => {
-        if(operator.classList.contains('selected')) {
-            found = true;
-        }
-    });
-    return found;
+function isKeyBoardEvent(key) {
+    let regex = new RegExp("[0-9]|[+*\/-]|Enter|Backspace");
+    if (key.match(regex)) {
+        return true;
+    } 
+    
+    return false;
+    
 }
 
 /* ****************************

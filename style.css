@@ -23,7 +23,7 @@ h1 {
     border: 3px solid #3795CC;
     border-radius: 10px;
     margin: 0 auto;
-    background: #91D7FF;
+    background: #4a98c6;
 }
 
 .calculator-screen {
@@ -43,6 +43,10 @@ h1 {
     margin: 20px auto;
     padding-right: 10px;
     font-size: 18px;
+}
+
+button[data-key].operator {
+    background:  #fff6d9;
 }
 
 .plus {
@@ -65,27 +69,30 @@ h1 {
     grid-row-start: 4;
 }
 
+.backspace {
+    grid-column-start: 4;
+    grid-row-start: 5;
+}
+
 .equals {
-    grid-column: 1 / span 4;
+    grid-column: 1 / span 3;
     grid-row-start: 5;
 }
 
 button[data-key] {
     height: 50px;
-    background: #44B9FF;
+    background: #8bd4ff;
     color: #496B80;
     border: none;
-    font-size: 18px;
+    font-size: 20px;
 }
 
-button[data-key].selected {
-    background: #3795CC;
-    outline: none;
-    border: none;
+button[data-key].operator:focus {
+    background: #FFDF75;
 }
 
-button[data-key]:focus {
-    background: #3795CC;
+button[data-key].number:focus {
+    background: #7EC5E6;
 }
 
 button::-moz-focus-inner {
