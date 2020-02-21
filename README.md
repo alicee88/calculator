@@ -11,4 +11,4 @@ The real challenges for this project involved the calculation logic. Whilst the 
 
 I improved my knowledge of colour combinations when styling the CSS, using the [Adobe Color Wheel](https://color.adobe.com/create), and gained some valuable experience with **regex** when adding keyboard support.
 
-
+You can try it [here](https://alicee88.github.io/calculator/).
