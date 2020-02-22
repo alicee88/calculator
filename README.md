@@ -12,4 +12,4 @@ The real challenges for this project involved the calculation logic. Whilst the 
 
 I improved my knowledge of colour combinations when styling the CSS, using the [Adobe Color Wheel](https://color.adobe.com/create), and with **regex** when adding keyboard support. I also learned some simple transitions to make the calculator rotate.
 
-
+You can try it [here](https://alicee88.github.io/calculator/).
