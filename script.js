@@ -3,9 +3,12 @@ const operators = document.querySelectorAll('.operator');
 const point = document.querySelector('[data-key="."]');
 const display = document.querySelector('.answer');
 const body = document.querySelector('body');
+const rotateButton = document.querySelector('.rotate-button');
+const calculator = document.querySelector('.calculator');
 
 keys.forEach(key => key.addEventListener('click', getInput));
 body.addEventListener('keydown', getInput);
+rotateButton.addEventListener('click', toggleRotate);
 
 const maxWidth = 20;
 let width = 0;
@@ -98,7 +101,7 @@ function handleNumberInput(key) {
     if(key === '.') {
         point.disabled = true;
 
-        if(!lastKey) lVal = '0';
+        if(!lastKey || displayValue === '0') lVal = '0';
     }
 
     if(isOperator(lastKey) || rVal) {
@@ -160,6 +163,10 @@ function isKeyBoardEvent(key) {
     
     return false;
     
+}
+
+function toggleRotate() {
+    calculator.classList.toggle('rotate');
 }
 
 /* ****************************

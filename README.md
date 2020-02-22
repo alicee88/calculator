@@ -6,9 +6,10 @@ A simple calculator app that can add, divide, subtract, and multiply.
 Options include:
 * Keyboard support
 * Floating point numbers
+* Rotate option so you can read 0.7734 as HELLO
 
 The real challenges for this project involved the calculation logic. Whilst the calculations themselves were straightforward, considering when to perform them (i.e. when a user strings together multiple calculations without pressing **=** in between), and how to handle cases that were outside the core workflow (e.g. pressing operators or **=** without valid inputs), took time.
 
-I improved my knowledge of colour combinations when styling the CSS, using the [Adobe Color Wheel](https://color.adobe.com/create), and gained some valuable experience with **regex** when adding keyboard support.
+I improved my knowledge of colour combinations when styling the CSS, using the [Adobe Color Wheel](https://color.adobe.com/create), and with **regex** when adding keyboard support. I also learned some simple transitions to make the calculator rotate.
 
 

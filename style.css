@@ -1,7 +1,14 @@
+
+@font-face {
+font-family: 'Calculator';
+src:  url('digital-7.woff2') format('woff2'),
+        url('digital-7.woff') format('woff');
+}
+
 html {
     box-sizing: border-box;
     margin: 0;
-    font-family: 'Roboto Mono', monospace;
+    font-family: 'Roboto Mono', monospace, sans-serif;
   }
 
   *, *:before, *:after {
@@ -24,6 +31,7 @@ h1 {
     border-radius: 10px;
     margin: 0 auto;
     background: #4a98c6;
+    transition: transform 150ms ease;
 }
 
 .calculator-screen {
@@ -42,7 +50,8 @@ h1 {
     text-align: right;
     margin: 20px auto;
     padding-right: 10px;
-    font-size: 18px;
+    font-size: 36px;
+    font-family: 'Calculator';
 }
 
 button[data-key].operator {
@@ -98,3 +107,22 @@ button[data-key].number:focus {
 button::-moz-focus-inner {
     border: 0;
   }
+
+.rotate-control {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.rotate-button {
+    width: 10rem;
+    height: 50px;
+    background: #FFFFFF;
+    color: #496B80;
+    border: 1px solid #496B80;
+    font-size: 18px;
+    border-radius: 10px;
+}
+
+.rotate {
+    transform: rotate(180deg);
+}
