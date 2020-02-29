@@ -41,16 +41,25 @@ h1 {
     padding: 10px 20px 20px 20px;
 }
 
-.answer {
+.equation {
+    height: 25px;
+    line-height: 25px;
+    font-size: 16px;
+}
+
+.input {
     height: 50px;
     line-height: 50px;
+    font-size: 36px;
+}
+
+.display-group {
     width: 85%;
     background: #496B80;
     color: #DDDDDD;
     text-align: right;
     margin: 20px auto;
     padding-right: 10px;
-    font-size: 36px;
     font-family: 'Calculator';
 }
 

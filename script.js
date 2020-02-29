@@ -1,7 +1,8 @@
 const keys = document.querySelectorAll('[data-key]');
 const operators = document.querySelectorAll('.operator');
 const point = document.querySelector('[data-key="."]');
-const display = document.querySelector('.answer');
+const displayInput = document.querySelector('.input');
+const displayEquation = document.querySelector('.equation');
 const body = document.querySelector('body');
 const rotateButton = document.querySelector('.rotate-button');
 const calculator = document.querySelector('.calculator');
@@ -10,26 +11,28 @@ keys.forEach(key => key.addEventListener('click', getInput));
 body.addEventListener('keydown', getInput);
 rotateButton.addEventListener('click', toggleRotate);
 
-const maxWidth = 20;
-let width = 0;
-let displayValue = "0";
-let rVal = "";
-let lVal = "";
-let operator = "";
+const maxWidth = 13;
+let input = "0";
+let equation = "";
 let impossible = false;
 let lastKey;
+const tokens = [];
+let numVal = "";
+let opVal = "";
 
 function getInput(e) {
-    
-    // Don't overflow the screen
-    if(width === maxWidth) return;
 
     let key;
     let button;
+
+    let inputWidth = displayInput.innerHTML.length;
+    let equationWidth = displayEquation.innerHTML.length * 0.4;
+    
+    // Is input keyboard or click?
     if(e.key && isKeyBoardEvent(e.key)) {
         key = e.key;
         button = getButton(key);
-        let lastButton = getButton(lastKey)
+       let lastButton = getButton(lastKey)
         if(lastButton)
             lastButton.blur();
         button.focus();
@@ -41,27 +44,153 @@ function getInput(e) {
         
     }
 
-    if(button.classList.contains('number')) {
-        displayValue = handleNumberInput(key);
-    } else if(key === 'C') {
-        displayValue = '0';
-        clearDisplay();
-    } else if(key === 'Backspace') {
-        displayValue = handleBackspace();
-    } else {
-        if(key !== '=')
-            button.focus();
-        displayValue = handleOperatorInput(key);
-    }
-
-    lastKey = key;
-
-    if(impossible) {
+    if(key === 'C') {
         clearDisplay();
     }
+    else if (key === 'Backspace' && !impossible) {
+        handleBackspace();
+    }
+    // Don't allow any input if the length of the equation is too long, or if we've divided by zero
+    else if(impossible || equationWidth > maxWidth) {
+        return;
+    } else if (button.classList.contains('number')) {
+        
+        // Handle number input
+        if(key === '.') {
+            point.disabled = true;
+            if(!numVal) {
+                numVal = '0';
+                equation = '0';
+            }
+        }
+        
+        // Build the number up, if valid
+        if(inputWidth < maxWidth || opVal) {
+            numVal += key;
+            equation += key;
+        }
 
-    display.textContent = displayValue;
-    width = display.innerHTML.length;
+        // Restart after =
+        if(lastKey === '=') {
+            numVal = key;
+            equation = key;
+        }
+
+        // Finished building the number, push it to the tokens queue
+        if(opVal) {
+            tokens.push(opVal);
+            opVal = "";
+        }
+
+        input = numVal;
+
+    } else if (button.classList.contains('operator')) {
+        
+        if(opVal) {
+            // Hit another operator after an existing operator - delete it and replace with the new one
+            opVal = key;
+            equation = equation.slice(0, -1);
+            equation += key;
+        }
+        
+        // Valid operator, push it to the tokens queue
+        if(numVal) {
+            tokens.push(parseFloat(numVal));
+            numVal = "";
+            equation += key;
+            opVal = key;
+        }
+
+        // Perform the calculation
+        if(key === '=') {
+            numVal = shuntingYard();
+            equation = numVal;
+            input = numVal;
+            opVal = "";
+        }
+    }
+
+    if(key != 'Backspace') {
+        lastKey = key;
+    }
+
+    displayEquation.textContent = equation;
+    displayInput.textContent = input;
+
+   
+}
+
+/*
+ Convert the equation to Reverse Polish Notation (Dijkstra's shunting yard algorithm): 
+     * All numbers are pushed to the queue when they are read.
+     * At the end of reading the expression, pop all operators off the stack and onto the queue.
+*/
+function shuntingYard() {
+    let queue = [];
+    let stack = [];
+
+    for(let i = 0; i < tokens.length; i++) {
+        let currToken = tokens[i];
+        if(isOperator(currToken)) {
+            // Find the operator with highest precedence and put it on top of the queue
+            let topOfStack = peek(stack);
+            while(topOfStack && (precedence[currToken] <= precedence[topOfStack])) {
+                queue.push(topOfStack);
+                stack.pop();
+                topOfStack = peek(stack);
+            }
+            stack.push(currToken);
+        } else {
+            // Push number to queue
+            queue.push(currToken);
+        }
+    }
+
+    // Push any remaining operators onto the queue
+    while(stack.length) {
+        queue.push(stack.pop());
+    }
+
+    return calc(queue);
+}
+
+const precedence = { '*' : 2,  '/' : 2,  '+' : 1,  '-' : 1 };
+
+function peek(arr) {
+    return arr.slice(-1)[0];
+}
+
+/* Evaluate our RPN array - push the tokens onto a stack until we find an operator, 
+then pop the last 2 elements from the stack and perform the operation on them.
+Push the result onto the stack and repeat until only the final answer remains. 
+*/
+function calc(rpn) {
+    let stack = [];
+    let answer;
+    for(let i = 0; i < rpn.length; i++) {
+        if(!isOperator(rpn[i])) {
+            stack.push(rpn[i]);
+        } else {
+            let rhs = stack.pop();
+            let lhs = stack.pop();
+            let calc = operate(rpn[i], parseFloat(lhs), parseFloat(rhs));
+            stack.push(calc);
+        }
+    }
+    answer = stack.pop();
+    tokens.length = 0;
+    tokens.push(answer);
+    return trim(answer);
+}
+
+function trim(answer) {
+    // Make sure the answer doesn't overflow the screen
+    let answerLength = answer;
+    answerLength = Math.floor(answerLength).toString().length;
+    let fixedPoints = maxWidth - answerLength;
+    if(fixedPoints < 0)
+        fixedPoints = maxWidth - 4;
+    return parseFloat(answer.toPrecision(fixedPoints)).toString();
 }
 
 function getButton(keyFromKeyboard) {
@@ -77,66 +206,18 @@ function getButton(keyFromKeyboard) {
     return found;
 }
 
+// Backspace only deletes numbers
 function handleBackspace() {
-    if(displayValue.length <= 1)
-    {
-        clearDisplay();
-        return '0';
+    if(isNumber(lastKey) || lastKey === '.') {
+        input = input.slice(0, -1);
+        if(!input) input = '0';
+        numVal = numVal.slice(0, -1);
+        if (!numVal) numVal = "";
+        equation = equation.slice(0, -1);
 
+        if(lastKey === '.')
+            point.disabled = false;
     }
-    // Take off the last digit
-    if(rVal) {
-        rVal = rVal.slice(0, -1);
-        return rVal;
-    }
-    else if(lVal) {
-        lVal = lVal.slice(0, -1)
-        return lVal;
-    }
-}
-
-function handleNumberInput(key) {
-    if(key === '0' && !lastKey) return displayValue;
-
-    if(key === '.') {
-        point.disabled = true;
-
-        if(!lastKey || displayValue === '0') lVal = '0';
-    }
-
-    if(isOperator(lastKey) || rVal) {
-        rVal += key;
-        return rVal;
-    } else {
-        lVal += key;
-        return lVal;
-    }
-}
-
-function handleOperatorInput(key) {
-    point.disabled = false;
-    let answer = displayValue;
-
-    if(lVal && rVal && !impossible) {
-        lVal = calcAnswer();
-        rVal = "";
-        answer = lVal;
-    } 
-
-    operator = key;
-    return answer.toString();
-    
-}
-
-function calcAnswer() {
-    let answer = operate(operator, parseFloat(lVal), parseFloat(rVal));
-
-    // Don't let the answer length overflow
-    if(impossible) return answer;
-
-    let answerLength = answer;
-    answerLength = Math.floor(answerLength).toString().length + 1;
-    return parseFloat(answer.toFixed(maxWidth - answerLength)).toString();
 }
 
 function isOperator(key) {
@@ -145,14 +226,22 @@ function isOperator(key) {
     return false;
 }
 
+function isNumber(key) {
+    if(Number(key)) {
+        return true;
+    }
+    return false;
+}
+
 function clearDisplay() {
-    rVal = "";
-    lVal = "";
-    operator = "";
-    width = 0;
     impossible = false;
     point.disabled = false;
     lastKey = "";
+    tokens.length = 0;
+    numVal = "";
+    opVal = "";
+    equation = "";
+    input = '0';
 }
 
 function isKeyBoardEvent(key) {
