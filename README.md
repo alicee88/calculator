@@ -1,5 +1,5 @@
 # Calculator
-An Odin Project project built to practice HTML/JSS/CS skills.
+An Odin Project project built to practice HTML/JS/CSS skills.
 
 A calculator app that can add, divide, subtract, and multiply.
 
